@@ -1,0 +1,17 @@
+---
+- name: Run reddit monolith container
+  hosts: tag_reddit-docker-host
+  become: true
+
+  tasks:
+    - name: install docker-py package required by docker_container
+      pip:
+        name: docker-py
+
+    - name: run container
+      docker_container:
+        exposed_ports: 9292
+        published_ports: 9292:9292
+        image: yurich00/otus-reddit:1.0
+        pull: yes
+        name: reddit

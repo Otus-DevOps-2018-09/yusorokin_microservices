@@ -1,0 +1,8 @@
+---
+- name: Install Docker
+  hosts: tag_reddit-docker-host
+  become: true
+  tags: predeploy
+
+  roles:
+    - geerlingguy.docker
