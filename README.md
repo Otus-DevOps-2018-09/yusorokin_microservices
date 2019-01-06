@@ -108,3 +108,49 @@ yusorokin microservices repository
 * Описал создание образа с помощью packer и создал образ;
 * Описал в terraform инфраструктуру с деплоем приложения через ansible через провижининг terraform;
 * Провижининг в терраформ можно отключить переменно `do_provision = false` и провижинить через ансибл самостоятельно.
+
+
+## Homework 14
+
+### Основное задание
+* Добавил каталог src с сервисами, распакованными внутри;
+* Добавил Dockerfile-ы для сервисов post-py, comment, ui;
+* Скачал последний образ MongoDB через docker pull;
+* Собрал образы всех сервисов;
+* Сборка ui началась не с первого шага, так для шагов, идентичным сборке comment были использованы образы из кеша;
+* Создал сеть `docker network create reddit`;
+* Запустил контейнеры в созданной ранее сети и проверил работу приложения;
+* Выполнил задание со * (1);
+* Поменял содержимое ui/Dockerfile для уменьшения размера образа;
+* Сборка началась со второго шага, так как базовый образ присутствовал, но команда RUN была изменена;
+* Выполнил задание со * (2);
+* Создал раздел `docker volume create reddit_db` и подключил его к монго `-v reddit_db:/data/db `;
+* Запустил контейнеры, создал пост, перезапустил контейнеры и убедился, что созданный ранее пост на месте.
+
+### Задание со * (1)
+* Запустил приложение с новыми сетевыми алиасами и переопределенными переменными окружения алиасов, проверил работоспособность:
+    ```
+    docker run -d --network=reddit \
+        --network-alias=new_post_db \
+        --network-alias=new_comment_db mongo:latest && \
+    docker run -d --network=reddit \
+        --network-alias=new_post \
+        -e POST_DATABASE_HOST=new_post_db yurich00/post:1.0 && \
+    docker run -d --network=reddit \
+        --network-alias=new_comment \
+        -e COMMENT_DATABASE_HOST=new_comment_db yurich00/comment:1.0 && \
+    docker run -d --network=reddit \
+        -p 9292:9292 \
+        -e POST_SERVICE_HOST=new_post \
+        -e COMMENT_SERVICE_HOST=new_comment yurich00/ui:1.0
+    ```
+
+### Задание со * (2)
+* Уменьшил образы до минимума, используя базовые образы `ruby:2.3-alpine` и `python:3.6.0-alpine`, минимальный набор пакетов и очистку кеша apk;
+* В результате получились следующие образы:
+    ```
+    yurich00/ui        2.0_alpine  0f6ab492035c  7 seconds ago   136MB
+    yurich00/post      2.0_alpine  ad4917ef894f  4 minutes ago   109MB
+    yurich00/comment   2.0_alpine  190278e4f748  13 minutes ago  134MB
+    ```
+* Файлы полученных образов называются `Dockerfile.small`.
