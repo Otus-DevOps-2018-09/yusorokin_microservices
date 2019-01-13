@@ -1,0 +1,17 @@
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+bbba2097e194        16 seconds ago      /bin/sh -c #(nop)  ENTRYPOINT ["python3" "po…   0B                  
+c8add5366ef8        16 seconds ago      /bin/sh -c #(nop) WORKDIR /app                  0B                  
+ffd943161b75        19 seconds ago      /bin/sh -c apk update && apk add build-base …   169MB               
+4bd4a731781e        52 seconds ago      /bin/sh -c #(nop) ADD dir:1112de9b85eff9b802…   10.5kB              
+d270414626e4        52 seconds ago      /bin/sh -c #(nop)  ENV POST_DATABASE=posts      0B                  
+63e779798526        52 seconds ago      /bin/sh -c #(nop)  ENV POST_DATABASE_HOST=po…   0B                  
+cb178ebbf0f2        21 months ago       /bin/sh -c #(nop)  CMD ["python3"]              0B                  
+<missing>           21 months ago       /bin/sh -c cd /usr/local/bin  && { [ -e easy…   48B                 
+<missing>           21 months ago       /bin/sh -c set -ex  && apk add --no-cache --…   83.2MB              
+<missing>           21 months ago       /bin/sh -c #(nop)  ENV PYTHON_PIP_VERSION=9.…   0B                  
+<missing>           21 months ago       /bin/sh -c #(nop)  ENV PYTHON_VERSION=3.6.0     0B                  
+<missing>           21 months ago       /bin/sh -c #(nop)  ENV GPG_KEY=0D96DF4D4110E…   0B                  
+<missing>           21 months ago       /bin/sh -c apk add --no-cache ca-certificates   618kB               
+<missing>           21 months ago       /bin/sh -c #(nop)  ENV LANG=C.UTF-8             0B                  
+<missing>           21 months ago       /bin/sh -c #(nop)  ENV PATH=/usr/local/bin:/…   0B                  
+<missing>           21 months ago       /bin/sh -c #(nop) ADD file:3df55c321c1c8d73f…   4.81MB              
