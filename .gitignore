@@ -28,3 +28,6 @@ ansible/old/db/
 
 geerlingguy.docker
 docker-vars.json
+
+notes.md
+.env

@@ -154,3 +154,93 @@ yusorokin microservices repository
     yurich00/comment   2.0_alpine  190278e4f748  13 minutes ago  134MB
     ```
 * Файлы полученных образов называются `Dockerfile.small`.
+
+
+## Homework 15
+
+### Основное задание
+* Запустил контейнер с параметром `--network none`, проверил, что единственный доступный сетевой интерфейс у контейнера - это loopback;
+* Запустил контейнер с параметром `--network host`, сравнил вывод команды ifconfig контейнера с выводом ifconfig хоста. Отличие только в том, что у контейнера после адреса IPv6 следует идентификатор области (сетевой интерфейс): <p>inet6 addr: fe80::42:f8ff:fe94:c1eb<strong><u>%32710</u></strong>/64 Scope:Link</p>
+* Запустил несколько раз `docker run --network host -d nginx`, следующие после первого контейнера, контейнеры завершали свое выполнение. Причину узнал, когда запустил еще один контейнер в интерактивном режиме `docker run --network host -ti nginx`:
+    ```
+    2019/01/07 14:27:46 [emerg] 1#1: bind() to 0.0.0.0:80 failed (98: Address already in use)
+    nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+    2019/01/07 14:27:46 [emerg] 1#1: still could not bind()
+    nginx: [emerg] still could not bind()
+    ```
+* На докер-хосте выполнил команду `sudo ln -s /var/run/docker/netns /var/run/netns`;
+* Запуская контейнеры в неймспейсах `none` и `host`, и выполняя `ifconfig` в каждом неймспейсе получил следующее:
+    * `null`:
+    ```
+    # sudo ip netns
+    68a75034bdca
+
+    # ip netns exec 68a75034bdca ifconfig
+    lo ...
+    ```
+    * `host`:
+    ```
+    # sudo ip netns
+    default
+
+    # ip netns exec default ifconfig
+    br-6630cc1a9a9e ...
+    docker0 ...
+    ens4 ...
+    lo ...
+    ```
+* Запустил проект с драйвером сети `bridge`:
+    ```
+    docker run -d --network=reddit mongo:latest
+    docker run -d --network=reddit <your-dockerhub-login>/post:1.0
+    docker run -d --network=reddit <your-dockerhub-login>/comment:1.0
+    docker run -d --network=reddit -p 9292:9292 <your-dockerhub-login>/ui:1.0
+    ```
+* Контейнеры не увидели друг-друга в сети, т.к. обращение было настроено по именам, а алиасов или имен контейнеров при запуске указано не было;
+* Запустил контейнеры с алиасами:
+    ```
+    docker run -d --network=reddit --network-alias=post_db --networkalias=comment_db mongo:latest
+    docker run -d --network=reddit --network-alias=post <your-login>/post:1.0
+    docker run -d --network=reddit --network-alias=comment <your-login>/comment:1.0
+    docker run -d --network=reddit -p 9292:9292 <your-login>/ui:1.0
+    ```
+* Создал сети и запустил в них контейнеры:
+    ```
+    docker network create back_net --subnet=10.0.2.0/24
+    docker network create front_net --subnet=10.0.1.0/24
+
+    docker run -d --network=front_net -p 9292:9292 --name ui <your-login>/ui:1.0
+    docker run -d --network=back_net --name comment <your-login>/comment:1.0
+    docker run -d --network=back_net --name post <your-login>/post:1.0
+    docker run -d --network=back_net --name mongo_db --network-alias=post_db --network-alias=comment_db mongo:latest
+    ```
+* Схема не заработала, т.к. Docker при инициализации контейнера может подключить к нему только 1
+сеть;
+* Подключил контейнеры `post` и `comment` ко второй сети и приложение заработало:
+    ```
+    docker network connect front_net post
+    docker network connect front_net comment
+    ```
+* Установил на докер-хосте bridge-utils;
+* Выполнил `docker network ls`, получил список созданных сетей;
+* Выполнил `ifconfig | grep br`, увидел список мостов;
+* Посмотрел информацию о мостах с помощью `brctl show <interface>`;
+* Выполнил `sudo iptables -nL -t -v nat`, посмотрел информацию о маршрутах iptables;
+* Выполнил `ps ax | grep docker-proxy`, нашел процесс docker-proxy;
+* Установил docker-compose;
+* Создал docker-compose.yml;
+* Выполнил:
+    ```
+    export USERNAME=<your-login>
+    docker-compose up -d
+    docker-compose ps
+    ```
+* Проверил работу приложения;
+* Создал файл .env, внес туда переменные окружения версии образов приложения, порт UI и имя пользователя в Docker Hub. Продублировал файл в .env.example, внес .env в .gitignore;
+* Узнал, как образуется имя запускаемого контейнера - имя текущей директории + имя образа + номер п/п. Имя контейнера можно изменить с помощью директивы container_name;
+* Выполнил задание со *.
+
+### Задание со *
+* Создал docker-compose.override.yml;
+* Примонтировал в нем к каждому контейнеру его директорию с кодом приложения, что позволило вносить правки в код при запущенном контейнере;
+* Переопределил команду для запуска руби-приложений директивой `command: puma --debug -w 2`.
