@@ -1,0 +1,7 @@
+---
+gitlab-host:
+  hosts:
+    "35.234.135.34":
+gitlab-runner:
+  hosts:
+    "35.234.135.34":

@@ -1,0 +1,6 @@
+---
+- import_playbook: base.yml
+- import_playbook: docker.yml
+- import_playbook: pip.yml
+- import_playbook: prepare.yml
+- import_playbook: docker-compose.yml
