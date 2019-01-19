@@ -13,7 +13,6 @@ before_script:
 build_job:
   stage: build
   script:
-    - exit 1
     - echo 'Building'
 
 test_unit_job:
