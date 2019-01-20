@@ -9,9 +9,9 @@
   hosts: gitlab-runner
   become: true
   vars:
-    gitlab_url: http://35.234.135.34/
+    gitlab_url: http://35.246.47.11/
     gitlab_registartion_token: buKAzTDmqmxnx1Aa2aut
-    gitlab_runner_name: my-runner
+    gitlab_runner_name: my-runner2
 
   tasks:
     - name: install pip docker package required by docker_container
@@ -41,6 +41,7 @@
           --url "{{ gitlab_url }}" \
           --registration-token "{{ gitlab_registartion_token }}" \
           --executor "docker" \
+          --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
           --docker-image ruby:2.4.2 \
           --description "{{ gitlab_runner_name }}" \
           --tag-list "docker,linux,ubuntu,xenial" \
