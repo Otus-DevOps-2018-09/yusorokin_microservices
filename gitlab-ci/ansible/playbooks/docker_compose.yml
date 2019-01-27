@@ -1,0 +1,17 @@
+---
+- name: Run gitlab container
+  hosts: all
+  become: true
+
+  tasks:
+    - name: install docker-py package required by docker_container
+      pip:
+        name: "{{ item }}"
+      loop:
+        - docker
+        - docker-compose
+
+    - name: run container
+      docker_service:
+        state: present
+        project_src: /srv/gitlab/
