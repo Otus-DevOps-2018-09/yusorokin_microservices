@@ -31,3 +31,4 @@ docker-vars.json
 
 notes.md
 .env
+.mk_vars
