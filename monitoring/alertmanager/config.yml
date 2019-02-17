@@ -1,0 +1,17 @@
+global:
+  slack_api_url: 'https://hooks.slack.com/services/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'
+
+route:
+  receiver: 'all'
+
+receivers:
+- name: 'all'
+  slack_configs:
+  - channel: '#yuriy_sorokin'
+  email_configs:
+  - to: example@gmail.com
+    from: example@gmail.com
+    smarthost: smtp.gmail.com:587
+    auth_username: "example@gmail.com"
+    auth_identity: "example@gmail.com"
+    auth_password: "prbisdzwfqcwddgm"
