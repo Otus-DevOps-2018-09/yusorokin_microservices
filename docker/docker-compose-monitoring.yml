@@ -47,9 +47,6 @@ services:
 
   cadvisor:
     image: google/cadvisor:v0.29.0
-    environment:
-      - "GMAIL_ACCOUNT=${GMAIL_ACCOUNT}"
-      - "GMAIL_AUTH_TOKEN=${GMAIL_AUTH_TOKEN}"
     volumes:
       - '/:/rootfs:ro'
       - '/var/run:/var/run:rw'
