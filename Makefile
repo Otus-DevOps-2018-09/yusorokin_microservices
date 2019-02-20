@@ -2,7 +2,7 @@
 include .mk_vars
 
 objects_reddit = ui comment post
-objects_monitoring = prometheus mongodb_exporter
+objects_monitoring = prometheus mongodb_exporter alertmanager grafana telegraf
 objects = $(objects_reddit) $(objects_monitoring)
 
 .PHONY : all

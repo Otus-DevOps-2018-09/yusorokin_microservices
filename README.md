@@ -313,6 +313,7 @@ yusorokin microservices repository
 * Деплой приложения описал также в задании `branch_review`:
 * * Запустил контейнер с помощью приаттаченного ранее docker-engine созданной машины в облаке - `docker run -d -p 9292:9292 ${DOCKER_LOGIN}/reddit:${CI_COMMIT_SHA}`.
 
+
 ## Homework 18
 
 ### Основное задание
@@ -351,3 +352,90 @@ yusorokin microservices repository
 
 ### Ссылка на реджистри
 https://hub.docker.com/u/yurich00/
+
+
+## Homework 19
+
+### Основное задание
+* Выделил из файла docker-compose в файл docker-compose-monitoring описание сервисов мониторинга;
+* Добавил описание сервиса cAdvisor в compose-файл, добавил таргет cAdvisor в prometheus.yml;
+* Запустил проект, пощупал интерфейс cAdvisor;
+* Добавил Grafana в compose-файл;
+* Запустил и настроил графану;
+* Скачал с сайта графаны дэшборд с мониторингом докера, импортировал его в графану, сохранил его также в папке monitoring/grafana/dashboards;
+* Добавил в prometheus.yml таргет posr с метриками приложения;
+* Перезапустил мониторинги, добавил несколько постов в приложение и проверил, что метрики post работают;
+* Создал дэшборд `UI service monitoring`, добавил туда панель `UI HTTP Requests` с метрикой **ui_request_count**;
+* Добавил панель `Rate of UI HTTP requests with error` с метрикой **rate(ui_request_count{http_status=~"^[45].*"}[1m])**, сгенерировал 400-х ошибок и убедился, что график их отображает;
+* Посмотрел историю изменений дэшюорда;
+* Изменил панель `UI HTTP Requests`, довив функцию rate к метрике (**rate(ui_request_count[5m])**), переименовал панель в `Rate of UI HTTP Requests`;
+* Добавил новую панель `HTTP response time 95th percentile` с метрикой **histogram_quantile(0.95, sum(rate(ui_request_latency_seconds_bucket[5m])) by (le))**;
+* Соханил дэшборд, экспортировал его и сохранил в папке monitoring/grafana/dashboards;
+* Создал новый дэшборд `Business_Logic_Monitoring`, добавил на него панель `Posts Rate` с метрикой **rate(post_count[1h])**;
+* Добавил панель `Comments Rate` с метрикой **rate(comment_count[1h])**, сохранил и экспортировал в папку с дэшбордами;
+* Создал директорию monitoring/alertmanager, а в ней Dockerfile и config.yml;
+* В config.yml описал интеграцию со Slack и маршрут алертинга, собрал образ;
+* Добавил alertmanager в компоуз-файл;
+* Создал в директории прометеус файл alerts.yml, где описал правило алертинга на падение инстансов;
+* Добавил этот файл в Dockerfile, подключил его и описал подклчение к alertmanager в prometheus.yml, пересобрал образы;
+* Перезапустил мониторинги и проверил работу алертов;
+* Пушнул все собранные образы хаб;
+* Выполнил часть заданий со *.
+
+### Задание со * (1)
+* Добавил в Makefile все собираемые образы;
+* Метрики Docker Engine:
+* * Прописал в настройках докер-демона (/etc/docker/daemon.json) `{ "metrics-addr" : "0.0.0.0:9323", "experimental" : true }`, перезапустил демон;
+* * Добавил в promehteus.yml таргет с этими метриками;
+* * Метрики включают в себя в основном состояние docker engine, нет детальной информации по контейнерам в отличие от cAdvisor;
+* * Импортировал с сайта графаны готовый дэшборд `Docker Engine Metrics`, сохранил его также в папке со всеми остальными дэшбордами;
+* Telegraf:
+* * Создал каталог monitoring/grafana/telegraf и файл конфига telegraf.conf;
+* * В telegraf.conf описал настройки экспортера метрик докера и отдачу в формате прометеус;
+* * Описал сборку образа с добавлением файла конфига в него, добавил сервис телеграфа в компоуз-файл;
+* * Добавил таргет в конфиг прометеуса;
+* * Нашел дэшборд где-то в интернете, на сайте графаны под прометеус подобного не было;
+* * Добавил дэшборд в репозиторий;
+* Создал алерт на примере 95 процентиля;
+* Настроил интеграцию alertmanager с Gmail, однако выяснил, что alertmanager не умеет в секреты, поэтому все секреты пришлось прописывать прямо в конфиге.
+
+### Задание со * (2)
+* Grafana Deploy:
+* * Создал файл `monitoring/grafana/dashboard_provisoning/dashboards.yml` с описанием деплоя дэшбордов;
+* * Создал файл `monitoring/grafana/datasources/prometheus.yml` с описанием датасорса prometheus;
+* * Создал Dockerfile и описал в нем копирование всех файлов деплоя по нужным директориям;
+* Stackdriver exporter:
+* * В качестве экспортера использовал https://github.com/frodenas/stackdriver_exporter;
+* * В компоуз-файле описал в качестве секрета json-файл для авторизации в GCP;
+* * Описал сервис `stackdriver_exporter` с подключением секрета и настройками экспортера;
+* * Создал небольшой дэшборд с несколькими метриками, сохранил в каталоге с дэшбордами;
+* * Набор метрик получился следующий:
+    ```
+    stackdriver_exporter_build_info
+    stackdriver_gce_instance_compute_googleapis_com_firewall_dropped_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_firewall_dropped_packets_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_cpu_reserved_cores
+    stackdriver_gce_instance_compute_googleapis_com_instance_cpu_usage_time
+    stackdriver_gce_instance_compute_googleapis_com_instance_cpu_utilization
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_read_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_read_ops_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_throttled_read_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_throttled_read_ops_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_throttled_write_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_throttled_write_ops_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_write_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_disk_write_ops_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_integrity_early_boot_validation_status
+    stackdriver_gce_instance_compute_googleapis_com_instance_integrity_late_boot_validation_status
+    stackdriver_gce_instance_compute_googleapis_com_instance_network_received_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_network_received_packets_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_network_sent_bytes_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_network_sent_packets_count
+    stackdriver_gce_instance_compute_googleapis_com_instance_uptime
+    ```
+
+### Ссылка на реджистри
+https://hub.docker.com/u/yurich00/
+
+### Канал Slack для алертов
+https://devops-team-otus.slack.com/messages/CDAKS754G

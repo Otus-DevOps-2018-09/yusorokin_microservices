@@ -1,0 +1,121 @@
+version: '3.3'
+services:
+
+  prometheus:
+    image: ${USER_NAME}/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d'
+    networks:
+      - front_net
+      - back_net
+
+  node-exporter:
+    image: prom/node-exporter:${NODE_EX_V}
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    networks:
+      - back_net
+
+  mongodb_exporter:
+    image: ${USER_NAME}/mongodb_exporter
+    environment:
+      - 'MONGODB_URI=mongodb://db:27017'
+    networks:
+      - back_net
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter:${BBOX_EX_V}
+    container_name: blackbox_exporter
+    ports:
+      - '9115:9115'
+    networks:
+      - back_net
+      - front_net
+
+  cadvisor:
+    image: google/cadvisor:v0.29.0
+    volumes:
+      - '/:/rootfs:ro'
+      - '/var/run:/var/run:rw'
+      - '/sys:/sys:ro'
+      - '/var/lib/docker/:/var/lib/docker:ro'
+    ports:
+      - '8080:8080'
+    networks:
+      - back_net
+
+  grafana:
+    image: ${USER_NAME}/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    networks:
+      - back_net
+
+  alertmanager:
+    image: ${USER_NAME}/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+    ports:
+      - 9093:9093
+    networks:
+      - back_net
+
+  telegraf:
+    image: ${USER_NAME}/telegraf
+    ports:
+      - 9273:9273
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - back_net
+
+  stackdriver_exporter:
+    image: frodenas/stackdriver-exporter:v0.6.0
+    environment:
+      - 'GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcloud_json'
+      - 'STACKDRIVER_EXPORTER_GOOGLE_PROJECT_ID=${G_PROJECT_ID}'
+      - 'STACKDRIVER_EXPORTER_MONITORING_METRICS_TYPE_PREFIXES=${STACKDRIVER_METRICS}'
+    secrets:
+      - gcloud_json
+    ports:
+      - 9255:9255
+    networks:
+      - back_net
+
+secrets:
+  gcloud_json:
+    file: /home/docker-user/nodal-kite-225016-3daeb6c7de48.json
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  front_net:
+    driver: bridge
+    driver_opts:
+      subnet: 10.0.1.0/24
+  back_net:
+    driver: bridge
+    driver_opts:
+      subnet: 10.0.2.0/24
