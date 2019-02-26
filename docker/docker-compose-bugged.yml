@@ -14,7 +14,7 @@ services:
 
   ui:
     container_name: ui
-    image: ${USER_NAME}/ui
+    image: ${USER_NAME}/ui:bugged
     environment:
       - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     ports:
@@ -29,7 +29,7 @@ services:
 
   post:
     container_name: post
-    image: ${USER_NAME}/post
+    image: ${USER_NAME}/post:bugged
     environment:
       - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:
@@ -43,7 +43,7 @@ services:
 
   comment:
     container_name: comment
-    image: ${USER_NAME}/comment
+    image: ${USER_NAME}/comment:bugged
     environment:
       - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
     networks:

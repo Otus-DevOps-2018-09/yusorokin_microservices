@@ -1,0 +1,49 @@
+version: '3'
+services:
+  fluentd:
+    image: ${USER_NAME}/fluentd
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      back_net:
+      front_net:
+
+  elasticsearch:
+    image: elasticsearch:6.6.0
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      transport.host: localhost
+      network.host: 0.0.0.0
+    networks:
+      back_net:
+
+  kibana:
+    image: kibana:6.6.0
+    ports:
+      - "5601:5601"
+    networks:
+      back_net:
+
+  zipkin:
+    image: openzipkin/zipkin:2.11.8
+    ports:
+      - "9411:9411"
+    networks:
+      back_net:
+      front_net:
+
+
+networks:
+  front_net:
+    driver: bridge
+    driver_opts:
+      subnet: 10.0.1.0/24
+  back_net:
+    driver: bridge
+    driver_opts:
+      subnet: 10.0.2.0/24
