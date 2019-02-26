@@ -516,3 +516,18 @@ median_time = time.sleep(max_resp_time)
 
 ### Ссылка на реджистри
 https://hub.docker.com/u/yurich00/
+
+
+## Homework 21
+
+### Основное задание
+* Описал манифесты сервисов reddit в директории kubernetes/reddit;
+* Прошел The Hard Way, все созданные в ходе прохождения файлы сохранил в kubernetes/the_hard_way;
+* Проверил, что `kubectl apply -f (ui, post, mongo, comment)` работает и поды создаются;
+* Удалил кластер.
+
+### Задание со *
+* Создал директорию kubernetes/ansible_thw;
+* В качестве примера описал выполнение шагов `Installing the Client Tools` и `Provisioning Compute Resources`;
+* Для шага `Provisioning Compute Resources` использовал `gce*` модули ansible, так как в модуле `gcp_compute_network` имеется баг, который при указании параметра `auto_create_subnetworks: false` создает сеть типа **legacy** вместо описанного в документации **custom**;
+* Из-за использования модулей `gce*`, не удалось явно указать IP-адрес инстансам, как того требует The Hard Way, но, думаю, это не страшно.
