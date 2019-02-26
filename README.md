@@ -527,7 +527,7 @@ https://hub.docker.com/u/yurich00/
 * Удалил кластер.
 
 ### Задание со *
-* Создал директорию kubernetes/ansible_thw;
+* Создал директорию kubernetes/ansible;
 * В качестве примера описал выполнение шагов `Installing the Client Tools` и `Provisioning Compute Resources`;
 * Для шага `Provisioning Compute Resources` использовал `gce*` модули ansible, так как в модуле `gcp_compute_network` имеется баг, который при указании параметра `auto_create_subnetworks: false` создает сеть типа **legacy** вместо описанного в документации **custom**;
 * Из-за использования модулей `gce*`, не удалось явно указать IP-адрес инстансам, как того требует The Hard Way, но, думаю, это не страшно.
