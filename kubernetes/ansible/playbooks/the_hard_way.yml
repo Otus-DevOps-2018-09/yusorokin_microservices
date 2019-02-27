@@ -1,0 +1,3 @@
+---
+- import_playbook: install_client_tools.yml
+- import_playbook: provision_compute_resources.yml
