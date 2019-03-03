@@ -531,3 +531,46 @@ https://hub.docker.com/u/yurich00/
 * В качестве примера описал выполнение шагов `Installing the Client Tools` и `Provisioning Compute Resources`;
 * Для шага `Provisioning Compute Resources` использовал `gce*` модули ansible, так как в модуле `gcp_compute_network` имеется баг, который при указании параметра `auto_create_subnetworks: false` создает сеть типа **legacy** вместо описанного в документации **custom**;
 * Из-за использования модулей `gce*`, не удалось явно указать IP-адрес инстансам, как того требует The Hard Way, но, думаю, это не страшно.
+
+
+## Homework 22
+
+### Основное задание
+* Установил и запустил minikube;
+* Проверил, что нода создалась;
+* Изучил файл конфига `~/.kube/config` и порядок настройки kubectl;
+* Изменил файл деплоймента ui, запустил ui в кластере;
+* Пробросил порт 9292 пода ui на порт 8080 моей машины, перешел на localhost:8080 и проверил, что страница ui открывается;
+* Обновил деплойменты comment, post и mongo, в mongo дополнительно примонтировал раздел;
+* Описал сервисы `comment-service.yml`, `post-service.yml` и `mongodb-service.yml`, запустил их;
+* Пробросил порт ui 9292:9292, зашел на localhost:9292, увидел, что приложение не работает;
+* В логах пода comment увидел, что нет доступа к comment_db;
+* Создал два новых сервиса для mongo `comment-mongodb-service.yml` и `post-mongodb-service.yml`;
+* Добавил в `mongo-deployment.yml` строчки `comment-db: "true"` и `post-db: "true"`;
+* Прописал в переменных окружения деплойментов comment и post параметр подключения к mongp;
+* Убедился, что приложение заработало;
+* Удалил mongodb-service;
+* Создал `ui-service.yml` с добавлением типа сервиса `type: NodePort` и указанием статичного порта;
+* Запустил `minikube service ui`, открылось ссылка приложения;
+* Нашел все запущенные компоненты аддона `dashboard` командой `kubectl get all -n kube-system --selector app=kubernetes-dashboard`;
+* Зашел в дэшборд и ознакомился с его функциональностью;
+* Создал и применил `dev-namespace.yml`, запустил приложение в неймспейсе **dev**;
+* Добавил в `ui-deployment.yml` информацию об окружении, запустил и проверил, что она отображается;
+* Зашел в консоль GKE и создал кластер с указанными параметрами, с разницей в том, что использовал дефолтную версию кластера, под `1.8.10-gke.0` кластер не смог развернуться, ругалось, что системные поды уже существуюти не позволяло им запуститься;
+* Пока разбирался, почему не поднимается кластер 1.8.10-gke.0, изучил консоль GKE;
+* Подключился к созданному кластеру, посмотрел, как изменился `~/.kube/config`, убедился, что kubecrl подключен к контексту кластера GKE;
+* Создал dev неймспейс и развернул в нем приложение;
+* Создал правило фаервола для ui;
+* Зашел по адресу ноды и порту на сервис ui;
+* Скриншот перед удалением кластера сделать забыл, но есть логи GCP https://www.radikal.kz/image/DLO;
+* Включил панель управления Kubernetes для кластера;
+* Выполнил `kubectl proxy` и перешел по ссылке http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/, вместо описанной в ДЗ нерабочей http://localhost:8001/ui;
+* Получил ошибку RBAC;
+* Назначил роль cluster-admin сервис-аккаунту дэшборда командой `kubectl create clusterrolebinding kubernetes-dashboard  --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard`;
+* Перешел снова в панель у правления и убедился, что она работает.
+
+### Задание со *
+* Создал директорию kubernetes/terraform;
+* Описал параметры создания кластера в файле `main.tf` по примеру из документации терраформ;
+* Для биндинга сервис-аккаунта панели управления к роли cluster-admin, как уже выше описывал, я использовал команду `kubectl create clusterrolebinding kubernetes-dashboard  --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard`, но при добавлении параметра `-o yaml` команда сохраняет описание созданного объекта в YAML;
+* Создал описанным выше способом файл `kubernetes-dashboard-rolebind.yaml`.
