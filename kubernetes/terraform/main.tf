@@ -33,7 +33,7 @@ resource "google_container_cluster" "primary" {
     disk_size_gb = 20
     machine_type = "g1-small"
 
-    tags = ["https-server"]
+    tags = ["https-server", "http-server"]
   }
 
   timeouts {
