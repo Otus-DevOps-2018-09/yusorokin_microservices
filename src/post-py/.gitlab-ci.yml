@@ -6,6 +6,7 @@ stages:
   - review
   - release
   - cleanup
+  - deploy
 
 build:
   stage: build
@@ -76,6 +77,13 @@ stop_review:
       - branches
     kubernetes: active
   except:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - run_deployment_to_prod
+  only:
     - master
 
 .auto_devops: &auto_devops |
@@ -196,6 +204,14 @@ stop_review:
     track="${1-stable}"
     name="$CI_ENVIRONMENT_SLUG"
     helm delete "$name" --purge || true
+  }
+
+  function run_deployment_to_prod {
+    apk add --no-cache curl
+    curl -X POST \
+        -F token=$CI_DEPLOY_PIPELINE_TRIGGER_TOKEN \
+        -F ref=master \
+        http://gitlab-gitlab/api/v4/projects/1/trigger/pipeline
   }
 
 before_script:
