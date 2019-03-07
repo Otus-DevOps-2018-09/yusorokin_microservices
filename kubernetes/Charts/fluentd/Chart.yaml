@@ -1,0 +1,6 @@
+name: fluentd
+version: 0.1.0
+description: fluentd
+maintainers:
+  - name: Yuriy Sorokin
+    email: yurich00@gmail.com
