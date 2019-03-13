@@ -656,3 +656,69 @@ gitlabRegistryStorageSize: 20Gi
 * Создал в репозитории reddit-deploy триггер, токен триггера поместил в переменные CI/CD группы;
 * В скрипте пайплайна reddit-deploy сделал, чтобы staging не запускался по триггеру, а production не запускался при пуше, отключил флаг ручного запуска;
 * В скрипты пайплайна сервисов добавил функцию запуска триггера деплоя `run_deployment_to_prod`, описал новый стейдж **deploy** с использованием этой функции.
+
+
+## Homework 25
+
+### Основное задание
+* Отключил в GKE Stackdriver Logging, Stackdriver Monitoring, включил Устаревшие права доступа;
+* Установил ingress-контроллер nginx из helm-чарта;
+* Добавил /etc/hosts имена хостов по адресу ингресса;
+* Стянул чарт прометеуса из репозитория чартов хелм;
+* Создал custom_values.yml;
+* Установил прометеус;
+* Включил в конфиге kube-state-metrics, обновил релиз;
+* Включил node-exporter, обновил релиз, проверил метрики;
+* Запустил релизы reddit-test, production и staging;
+* Обновил конфиг, добавив джоб reddit-endpoints, обновил релиз;
+* Добавил метки k8s и prometheus в конфиг релейбла;
+* Добавил джоб reddit-production, обновил релиз;
+* Разбил джоб reddit-endpoints на джобы по эндпойнтам ui, post и comment;
+* Поставил grafana через helm;
+* При входе указанный пароль не подошел, параметр `adminPassword=admin` не работает https://github.com/helm/charts/issues/7891, он создает секрет с паролем, но фактически не меняет пароль в графане, обошел это командой:
+```bash
+kubectl get secret grafana -o jsonpath='{.data.admin-password}' | \
+base64 --decode | xargs -I {} kubectl exec -it grafana-59b795cfd8-hrjdf \
+-- grafana-cli admin reset-admin-password --homepath /usr/share/grafana {}
+```
+* Добавил датасорс прометеуса, загрузил дэшборд кубернетиса;
+* Добавил дэшборды, ранее созданные в предыдущих ДЗ (Business_Logic_Monitoring и UI_service_monitoring);
+* Добавил на дэшборд UI_service_monitoring переменую namespace, в запросе вместо namespace использовал `kubernetes_namespace`;
+* Добавил фильтр по переменной в графики дэшборда, то же самое проделал с дэшюордом Business_Logic_Monitoring;
+* Все используемые в рамках этого ДЗ дэшборды сохранил в `kubernetes/grafana/dashboards`;
+* Импортировал график №741;
+* Выполнил задание со * (1);
+* Выполнил задание со * (2);
+* Для раздела про логгирование мощностей трех моих нод уже не хватало, поэтому добавил еще одну;
+* Установил для нее лейбл elastichost=true;
+* Создал директорию kubernetes/efk/, создал в ней необходимые манифесты и применил их;
+* Установил кибану через хелм, настроил ее;
+* Выполнил задание со * (3).
+
+### Задание со * (1)
+* Активировал alertmanager в чарте prometheus в `custom_values.yml`;
+* Описал в разделе `alertmanagerFiles.alertmanager.yml` настройки alertmanager;
+* В разделе `serverFiles.alerts` описал правила алертинга.
+
+### Задание со * (2)
+* Загрузил чарт Prometheus Operator в директорию `kubernetes/Charts/prometheus-operator`;
+* Создал копию values.yaml, назвал ее custom_values.yml, далее все настройки выполнял в этой копии;
+* Включил ингресс (`ingress.enabled=true`);
+* Присвоил имя хоста (`hosts: ["prometheus-operator"]`);
+* Настроил ServiceMonitor:
+```yaml
+  additionalServiceMonitors:
+    - name: post-monitor
+      selector:
+        matchLabels:
+          app: reddit
+          component: post
+      namespaceSelector:
+        any: true
+      endpoints:
+        - port: post
+```
+
+### Задание со * (3)
+* Создал в директории elasticsearch и fluentd в kubernetes/Charts, где описал чарты развертывания соответствующих сервисов;
+* Там же создал директорию чарта efk, где описал зависимости от созданных ранее сервисов и добавил в зависимости kibana.
